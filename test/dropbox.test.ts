@@ -1,3 +1,6 @@
+import {Dropbox} from "../lib/dropbox";
+import {Github} from "../lib/github";
+
 const expect = require('chai').expect;
 const v4 = require("uuid").v4;
 const nock = require('nock');
@@ -14,7 +17,9 @@ describe('GET followers', () => {
         done();
     });
 
-    it('returns user', (done) => {
+    it('returns user', async () => {
+        const github = new Github();
+
         const userResponse = {
             "login": "octocat",
             "id": 583231,
@@ -53,24 +58,38 @@ describe('GET followers', () => {
         const username = 'octocat';
 
         // Mock the TMDB configuration request response
-        nock('https://api.github.com')
+        const scope = nock('https://api.github.com')
             .get(`/users/${username}`)
             .reply(200, userResponse);
 
-        github.getUser(username, (err, res) => {
-            // console.log(`user: ${JSON.stringify(res, null, 2)}`);
-            //expect an object back
-            expect(typeof res).to.equal('object');
+        await github.getUser(username)
+            .then((res) => {
+                expect(typeof res).to.equal('object');
 
-            //Test result of name, company and location for the response
-            expect(res.name).to.equal('The Octocat')
-            expect(res.company).to.equal('GitHub')
-            expect(res.location).to.equal('San Francisco')
-            done();
-        });
+                const user = JSON.parse(JSON.stringify(res.body))
+
+                expect(typeof user).to.equal('object');
+
+                //Test result of name, company and location for the response
+                expect(user.name).to.equal('The Octocat');
+                expect(user.company).to.equal('GitHub');
+                expect(user.location).to.equal('San Francisco');
+            })
+            .catch((err) => {
+                console.error(JSON.stringify(err, null, 2));
+                Github.error(err.response);
+            });
+
+        if (!scope.isDone()) {
+            console.error('pending mocks: %j', scope.pendingMocks())
+        }
+
+        // expect(scope.isDone()).to.be.true;
     });
 
-    it('returns user followers', (done) => {
+    it('returns user followers', async () => {
+        const github = new Github();
+
         const followersResponse = [{
             "login": "octocat",
             "id": 583231,
@@ -112,22 +131,36 @@ describe('GET followers', () => {
         const username = 'octocat';
 
         // Mock the TMDB configuration request response
-        nock('https://api.github.com')
+        const scope = nock('https://api.github.com')
             .get(`/users/${username}/followers`)
             .reply(200, followersResponse);
 
-        github.getUserFollowers(username, (err, res) => {
-            // console.log(`res: ${JSON.stringify(res, null, 2)}`);
-            // It should return an array object
-            expect(Array.isArray(res)).to.equal(true);
-            // Ensure that at least one follower is in the array
-            expect(res).to.have.length.above(1);
-            // Each of the items in the array should be a string
-            res.forEach((follower) => {
-                expect(follower).to.be.a('string');
+        await github.getUserFollowers(username)
+            .then((res) => {
+                expect(typeof res).to.equal('object');
+
+                const followers = JSON.parse(JSON.stringify(res.body)).map(follower => {
+                    return follower.login;
+                });
+
+                expect(Array.isArray(followers)).to.equal(true);
+                // Ensure that at least one follower is in the array
+                expect(followers).to.have.length.above(1);
+                // Each of the items in the array should be a string
+                followers.forEach((followers) => {
+                    expect(followers).to.be.a('string');
+                });
+            })
+            .catch((err) => {
+                console.error(JSON.stringify(err, null, 2));
+                Github.error(err.response);
             });
-            done();
-        });
+
+        if (!scope.isDone()) {
+            console.error('pending mocks: %j', scope.pendingMocks())
+        }
+
+        // expect(scope.isDone()).to.be.true;
     });
 });
 
@@ -136,12 +169,11 @@ describe('Dropbox', () => {
 
     });
 
-    it('Should assert true to be true', (done) => {
+    it('Should assert true to be true', () => {
         expect(true).to.be.true;
-        done();
     });
 
-    it('returns folder', (done) => {
+    it('returns folder', () => {
         // const folderName = v4();
         // const folderPath = `/${folderName}`;
         //
@@ -153,8 +185,5 @@ describe('Dropbox', () => {
         //         "id": "id:blahblahblah"
         //     }
         // };
-
-
-        done();
     });
 });;
