@@ -1,0 +1,73 @@
+{
+  "name": "nock_dropbox",
+  "version": "0.1.0",
+  "description": "Nock Dropbox API Testing",
+  "scripts": {
+    "audit": "npx npm-run-all audit:*",
+    "audit:depcheck": "npx depcheck --specials=bin --ignore-dirs=node_modules --ignores=ts-node,nyc,@types/*,nock,chai,uuid,mocha",
+    "audit:npm": "npm audit --registry https://registry.npmjs.org/",
+    "audit:npm-check-updates": "npx npm-check-updates --error-level 2",
+    "prebuild": "npm run audit:npm && npm run gts:clean",
+    "build": "tsc",
+    "build:examples": "rm -f ./examples/*.js && tsc ./examples/*.ts",
+    "postbuild": "npm run audit",
+    "clean": "rm -f ./lib/*.js",
+    "install:clean": "rm -fR ./node_modules && npm install --verbose",
+    "code:check": "gts check",
+    "code:fix": "gts fix",
+    "coverage": "nyc --lines 75 mocha -r ts-node/register --full-trace --bail --exit ./test/*/*.ts",
+    "gts:clean": "gts clean",
+    "npm": "npx npm-run-all npm:*",
+    "npm:format": "npx prettier-package-json --write package.json",
+    "npm:upgrade": "npx npm-check-updates -iu",
+    "prepublishOnly": "npm run build",
+    "pretest": "npm run build",
+    "test": "mocha -r ts-node/register $NODE_DEBUG_OPTION --exit ./test/*.ts",
+    "posttest": "npm run code:check"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.3",
+    "@types/http-errors": "^1.6.2",
+    "@types/mocha": "^5.2.7",
+    "@types/nock": "^11.1.0",
+    "@types/node": "^12.7.11",
+    "@types/uuid": "^3.4.5",
+    "chai": "^4.2.0",
+    "gts": "^1.1.0",
+    "mocha": "^6.2.1",
+    "nock": "^11.3.6",
+    "nyc": "^14.1.1",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.3",
+    "uuid": "^3.3.3"
+  },
+  "nyc": {
+    "all": true,
+    "include": [
+      "lib/**/*.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text"
+    ],
+    "sourceMap": true,
+    "instrument": true
+  },
+  "prettier": {
+    "trailingComma": "none",
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true,
+    "printWidth": 180
+  }
+}
