@@ -11,12 +11,6 @@ describe('GET followers', () => {
 
     });
 
-    it('Should assert true to be true', (done) => {
-        expect(true).to.be.true;
-
-        done();
-    });
-
     it('returns user', async () => {
         const github = new Github();
 
@@ -54,11 +48,10 @@ describe('GET followers', () => {
             "updated_at": "2019-09-23T14:29:34Z"
         };
 
-        // tslint:disable-next-line:prefer-const
         const username = 'octocat';
 
-        // Mock the TMDB configuration request response
         const scope = nock('https://api.github.com')
+            .log((m, d) => console.log(m))
             .get(`/users/${username}`)
             .reply(200, userResponse);
 
@@ -80,11 +73,11 @@ describe('GET followers', () => {
                 Github.error(err.response);
             });
 
-        if (!scope.isDone()) {
-            console.error('pending mocks: %j', scope.pendingMocks())
-        }
+        // if (!scope.isDone()) {
+        //     console.error('pending mocks: %j', scope.pendingMocks())
+        // }
 
-        // expect(scope.isDone()).to.be.true;
+        expect(scope.isDone()).to.be.true;
     });
 
     it('returns user followers', async () => {
@@ -130,8 +123,8 @@ describe('GET followers', () => {
 
         const username = 'octocat';
 
-        // Mock the TMDB configuration request response
         const scope = nock('https://api.github.com')
+            .log((m, d) => console.log(m))
             .get(`/users/${username}/followers`)
             .reply(200, followersResponse);
 
@@ -156,11 +149,11 @@ describe('GET followers', () => {
                 Github.error(err.response);
             });
 
-        if (!scope.isDone()) {
-            console.error('pending mocks: %j', scope.pendingMocks())
-        }
+        // if (!scope.isDone()) {
+        //     console.error('pending mocks: %j', scope.pendingMocks())
+        // }
 
-        // expect(scope.isDone()).to.be.true;
+        expect(scope.isDone()).to.be.true;
     });
 });
 
@@ -169,21 +162,84 @@ describe('Dropbox', () => {
 
     });
 
-    it('Should assert true to be true', () => {
-        expect(true).to.be.true;
+    it('create folder', async () => {
+        const dropbox = new Dropbox();
+        const accessToken = v4();
+        const folderName = v4();
+        const folderPath = `/${folderName}`;
+
+        const response = {
+            "metadata": {
+                "name": folderName,
+                "path_lower": folderPath,
+                "path_display":folderPath,
+                "id": "id:blahblahblah"
+            }
+        };
+
+        const scope = nock('https://api.dropboxapi.com/2')
+            .log((m, d) => console.log(m))
+            .post('/files/create_folder_v2')
+            .matchHeader('Authorization', `Bearer ${accessToken}`)
+            .reply(200, response);
+
+        await dropbox.createFolder(accessToken, folderPath)
+            .then((res) => {
+
+            })
+            .catch((err) => {
+                console.error(JSON.stringify(err, null, 2));
+                Dropbox.error(err.response);
+            });
+
+        expect(scope.isDone()).to.be.true;
     });
 
-    it('returns folder', () => {
-        // const folderName = v4();
-        // const folderPath = `/${folderName}`;
-        //
-        // const folderResponse = {
-        //     "metadata": {
-        //         "name": folderName,
-        //         "path_lower": folderPath,
-        //         "path_display":folderPath,
-        //         "id": "id:blahblahblah"
-        //     }
-        // };
+    it('list all', async () => {
+        const dropbox = new Dropbox();
+        const accessToken = v4();
+
+        const response = {
+            "entries": [
+                {
+                    ".tag": "folder",
+                    "name": "af35eabf-cb79-4bf1-bb89-85bc8b341b5c",
+                    "path_lower": "/af35eabf-cb79-4bf1-bb89-85bc8b341b5c",
+                    "path_display": "/af35eabf-cb79-4bf1-bb89-85bc8b341b5c",
+                    "id": "id:D7L5tNn4AoAAAAAAAAAUnw"
+                },
+                {
+                    ".tag": "folder",
+                    "name": "9ce570a3-8b15-4c67-9813-fa8627d8bf9a",
+                    "path_lower": "/9ce570a3-8b15-4c67-9813-fa8627d8bf9a",
+                    "path_display": "/9ce570a3-8b15-4c67-9813-fa8627d8bf9a",
+                    "id": "id:D7L5tNn4AoAAAAAAAAAUoA"
+                },
+                {
+                    ".tag": "folder",
+                    "name": "7b1b6bc5-0492-430f-94fb-18a4b4c71349",
+                    "path_lower": "/7b1b6bc5-0492-430f-94fb-18a4b4c71349",
+                    "path_display": "/7b1b6bc5-0492-430f-94fb-18a4b4c71349",
+                    "id": "id:D7L5tNn4AoAAAAAAAAAUuQ"
+                }
+            ]
+        };
+
+        const scope = nock('https://api.dropboxapi.com/2')
+            .log((m, d) => console.log(m))
+            .post('/files/list_folder')
+            .matchHeader('Authorization', `Bearer ${accessToken}`)
+            .reply(200, response);
+
+        await dropbox.listAll(accessToken)
+            .then((res) => {
+
+            })
+            .catch((err) => {
+                console.error(JSON.stringify(err, null, 2));
+                Dropbox.error(err.response);
+            });
+
+        expect(scope.isDone()).to.be.true;
     });
-});;
+});
