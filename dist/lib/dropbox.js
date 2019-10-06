@@ -17,15 +17,6 @@ class Dropbox extends request_1.Request {
             json: true
         };
         return this.post(options);
-        // const { response, body } = await this.post(options);
-        //
-        // if (response.statusCode !== 200) {
-        //   return this.error(response);
-        // }
-        //
-        // this.success(response, body);
-        //
-        // return body;
     }
 }
 exports.Dropbox = Dropbox;

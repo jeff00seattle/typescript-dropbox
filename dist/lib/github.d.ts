@@ -1,2 +1,5 @@
-export declare function getUserFollowers(username: string, callback: any): void;
-export declare function getUser(username: string, callback: any): void;
+import { Request, RequestResponse } from './request';
+export declare class Github extends Request {
+    getUser(username: string): Promise<RequestResponse>;
+    getUserFollowers(username: string): Promise<RequestResponse>;
+}
