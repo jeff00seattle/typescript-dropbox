@@ -1,0 +1,15 @@
+{
+  "extends": "gts/tslint.json",
+  "rules": {
+    "max-line-length": {
+      "options": 0
+    },
+    "trailing-comma": [
+      true,
+      {
+        "multiline": "never",
+        "esSpecCompliant": true
+      }
+    ]
+  }
+}
