@@ -8,7 +8,7 @@ const v4 = require("uuid").v4;
 const nock = require('nock');
 const github = require('../lib/github');
 
-describe('GET followers', () => {
+describe('Github Tests', () => {
     beforeEach( () => {
 
     });
@@ -154,7 +154,7 @@ describe('GET followers', () => {
     });
 });
 
-describe('Dropbox', () => {
+describe('Dropbox Tests', () => {
     beforeEach( () => {
 
     });
@@ -176,7 +176,7 @@ describe('Dropbox', () => {
 
         const scope = nock('https://api.dropboxapi.com/2')
             .log((m, d) => console.log(m))
-            .post('/files/create_folder_v2')
+            .post('/files/create_folder_v2', { 'path': /^\/[a-z0-9\-]+$/, 'autorename': false})
             .matchHeader('Authorization', `Bearer ${accessToken}`)
             .reply(200, response);
 
