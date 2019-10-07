@@ -1,4 +1,4 @@
-import { Request, RequestMethod, RequestOptions, RequestResponse } from './request';
+import { Request, RequestMethod, RequestOptions, RequestResponse } from './helpers/request';
 
 export class Github extends Request {
   async getUser(username: string): Promise<RequestResponse> {

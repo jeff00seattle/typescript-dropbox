@@ -26,6 +26,10 @@ export interface RequestResponse {
 }
 
 export class Request {
+  /**
+   *
+   * @param options
+   */
   protected async get(options: RequestOptions): Promise<RequestResponse> {
     return new Promise((resolve, reject) => {
       request(options, (error, response, body) => {
@@ -38,6 +42,10 @@ export class Request {
     });
   }
 
+  /**
+   *
+   * @param options
+   */
   protected async post(options: RequestOptions): Promise<RequestResponse> {
     return new Promise((resolve, reject) => {
       request(options, (error, response, body) => {
@@ -50,6 +58,11 @@ export class Request {
     });
   }
 
+  /**
+   *
+   * @param response
+   * @param body
+   */
   static success(response, body) {
     console.log(`Status: ${response.statusCode}`);
     console.log(`Message: ${response.statusMessage}`);
@@ -57,11 +70,20 @@ export class Request {
     console.log(`Body: ${JSON.stringify(body, null, 2)}`);
   }
 
-  static error(response) {
-    console.error(`Status: ${response.statusCode}`);
-    console.error(`Message: ${response.statusMessage}`);
+  /**
+   *
+   * @param error
+   */
+  static error(error) {
+    console.error(`Status: ${error.statusCode}`);
+    console.error(`Message: ${error.statusMessage}`);
   }
 
+  /**
+   *
+   * @param entity
+   * @param charToRemove
+   */
   protected trimChar(entity: string, charToRemove) {
     while (entity.charAt(0) === charToRemove) {
       entity = entity.substring(1);
