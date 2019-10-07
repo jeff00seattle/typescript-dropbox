@@ -1,4 +1,4 @@
-import { RequestMethod, RequestOptions, Request, RequestResponse } from './helpers/request';
+import { Request, RequestMethod, RequestOptions, RequestResponse } from './helpers/request';
 import httpStatus from 'http-status';
 import createError from 'http-errors';
 
@@ -105,6 +105,8 @@ export class Dropbox extends Request {
     if (res.response.statusCode < 200 || res.response.statusCode > 399) {
       throw createError(res.response.statusCode, res.response.statusMessage);
     }
+
+    console.log(JSON.stringify(res, null, 2));
 
     const resBody: DropboxListEntry = res.body as DropboxListEntry;
 
