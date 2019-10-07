@@ -1,10 +1,30 @@
-import { RequestMethod, RequestOptions, Request, RequestResponse } from './request';
+import { RequestMethod, RequestOptions, Request, RequestResponse } from './helpers/request';
+import httpStatus from 'http-status';
+import createError from 'http-errors';
 
-export interface DropboxEntry {
-  type: string;
-  name: string;
-  id: string;
+
+interface DropboxEntry {
+  '.tag': string,
+  name: string,
+  path_lower: string,
+  path_display: string,
+  id: string
 }
+
+export interface DropboxFolderEntry {
+  metadata: DropboxEntry
+};
+
+export interface DropboxListEntry {
+  entries: DropboxEntry[]
+};
+
+export interface DropboxEntity {
+  type: string,
+  name: string,
+  path: string,
+  id: string
+};
 
 export class Dropbox extends Request {
   /**
@@ -28,7 +48,28 @@ export class Dropbox extends Request {
       },
       json: true
     };
-    return this.post(options);
+
+    const res: RequestResponse = await this.post(options);
+
+    if (res.response.statusCode < 200 || res.response.statusCode > 399) {
+      throw createError(res.response.statusCode, res.response.statusMessage);
+    }
+
+    const resBody: DropboxFolderEntry = res.body as DropboxFolderEntry;
+    const folder: DropboxEntity = {
+      type: 'folder',
+      name: resBody.metadata.name,
+      path: resBody.metadata.path_display,
+      id: resBody.metadata.id
+    };
+
+    return {
+      response: {
+        statusCode: res.response.statusCode,
+        statusMessage: httpStatus[res.response.statusCode]
+      },
+      body: folder
+    } as RequestResponse;
   }
 
   /**
@@ -60,7 +101,28 @@ export class Dropbox extends Request {
       json: true
     };
 
-    return this.post(options);
+    const res: RequestResponse = await this.post(options);
+
+    if (res.response.statusCode < 200 || res.response.statusCode > 399) {
+      throw createError(res.response.statusCode, res.response.statusMessage);
+    }
+
+    const resBody: DropboxListEntry = res.body as DropboxListEntry;
+
+    const entities = resBody.entries.map(entry => { return {
+      type: entry['.tag'],
+      name: entry.name,
+      path: entry.path_display,
+      id: entry.id
+    }}) as DropboxEntity[];
+
+    return {
+      response: {
+        statusCode: res.response.statusCode,
+        statusMessage: httpStatus[res.response.statusCode]
+      },
+      body: entities
+    } as RequestResponse;
   }
 
   /**
@@ -75,44 +137,79 @@ export class Dropbox extends Request {
       parent = '';
     }
 
+    const res: RequestResponse = await this.listAll(accessToken, parent, false);
+
+    if (res.response.statusCode < 200 || res.response.statusCode > 399) {
+      throw createError(res.response.statusCode, res.response.statusMessage);
+    }
+
+    const entities: DropboxEntity[] = res.body as DropboxEntity[];
+    const folders: DropboxEntity[] = entities.filter(entry => entry['type'] === 'folder') as DropboxEntity[];
+
+    return {
+      response: {
+        statusCode: res.response.statusCode,
+        statusMessage: res.response.statusMessage
+      },
+      body: folders
+    } as RequestResponse;
+  }
+
+  async deleteAllFolders(accessToken: string, parent?: string): Promise<RequestResponse> {
+    const res: RequestResponse = await this.listFolders(accessToken, parent);
+
+    if (res.response.statusCode < 200 || res.response.statusCode > 399) {
+      throw createError(res.response.statusCode, res.response.statusMessage);
+    }
+
+    const folders: DropboxEntity[] = res.body as DropboxEntity[];
+    for (const folder of folders) {
+      await this.deleteById(accessToken, folder.id)
+    }
+
+    return {
+      response: {
+        statusCode: res.response.statusCode,
+        statusMessage: res.response.statusMessage
+      },
+      body: folders
+    } as RequestResponse;
+  };
+
+  async deleteById(accessToken: string, id: string): Promise<RequestResponse> {
     const options: RequestOptions = {
       method: RequestMethod.POST,
-      url: 'https://api.dropboxapi.com/2/files/list_folder',
+      url: 'https://api.dropboxapi.com/2/files/delete_v2',
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       },
       body: {
-        path: parent
+        path: id
       },
       json: true
     };
 
     const res: RequestResponse = await this.post(options);
 
-    const body = JSON.parse(JSON.stringify(res.body));
-    const entries = body.entries;
-    const folders: DropboxEntry[] = entries.filter(entry => entry['.tag'] === 'folder') as DropboxEntry[];
+    if (res.response.statusCode < 200 || res.response.statusCode > 399) {
+      throw createError(res.response.statusCode, res.response.statusMessage);
+    }
 
-    body.entries = folders;
+    const resBody: DropboxFolderEntry = res.body as DropboxFolderEntry;
+    const folder: DropboxEntity = {
+      type: resBody.metadata['.tag'],
+      name: resBody.metadata.name,
+      path: resBody.metadata.path_display,
+      id: resBody.metadata.id
+    };
 
     return {
-      body,
-      response: res.response
-    };
-  }
-
-  // async deleteAllFolders(accessToken: string, parent?: string) {
-  //
-  //   const res: RequestResponse = await this.listFolders(accessToken, parent);
-  //
-  //   const body = JSON.parse(JSON.stringify(res.body));
-  //   const folders = body.entries;
-  //
-  //   for (const folder of folders) {
-  //     awit
-  //   }
-  //
-  //   return res;
-  // };
+      response: {
+        statusCode: res.response.statusCode,
+        statusMessage: httpStatus[res.response.statusCode]
+      },
+      body: folder
+    } as RequestResponse;
+  };
 }
