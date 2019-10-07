@@ -1,4 +1,4 @@
-const { getConfig } = require('./getConfig');
+const { getConfig } = require('./helpers/getConfig');
 import {Dropbox} from '../lib/dropbox';
 const v4 = require("uuid").v4;
 
