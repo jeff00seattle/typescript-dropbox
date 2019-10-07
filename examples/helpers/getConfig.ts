@@ -7,7 +7,7 @@ export interface ArchiveConfig {
 }
 
 export function getConfig(): ArchiveConfig {
-    const pathAccount = path.join(__dirname, "/config/credentials_token.json");
+    const pathAccount = path.join(__dirname, "../config/credentials_token.json");
     const config = fileSystem.readFileSync(pathAccount);
     const jsonConfig = JSON.parse(config);
 
