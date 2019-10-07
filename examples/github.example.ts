@@ -1,4 +1,4 @@
-import {Github} from '../lib/github';
+import {Github, GithubEntity} from '../lib/github';
 const github = new Github();
 
 const username = 'octocat';
@@ -6,9 +6,10 @@ const username = 'octocat';
 (async () => {
     await github.getUserFollowers(username)
         .then((res) => {
-            const followers = JSON.parse(JSON.stringify(res.body)).map(follower => {
-                return follower.login;
-            });
+            const followers: GithubEntity[] = res.body as GithubEntity[];
+            // const followers = JSON.parse(JSON.stringify(res.body)).map(follower => {
+            //     return follower.login;
+            // });
 
             Github.success(res.response, followers);
         })
@@ -19,13 +20,9 @@ const username = 'octocat';
 
     await github.getUser(username)
         .then((res) => {
-            const user = JSON.parse(JSON.stringify(res.body))
+            const user: GithubEntity = res.body as GithubEntity;
 
-            Github.success(res.response, {
-                'name': user.name,
-                'id': user.id,
-                'login': user.login
-            });
+            Github.success(res.response, user);
         })
         .catch((err) => {
             console.error(JSON.stringify(err, null, 2));

@@ -1,5 +1,7 @@
-import {Dropbox} from "../lib/dropbox";
-import {Github} from "../lib/github";
+
+import {Dropbox, DropboxEntity} from "../lib/dropbox";
+import {RequestResponse} from "../lib/helpers/request";
+import {Github, GithubEntity} from "../lib/github";
 
 const expect = require('chai').expect;
 const v4 = require("uuid").v4;
@@ -56,12 +58,10 @@ describe('GET followers', () => {
             .reply(200, userResponse);
 
         await github.getUser(username)
-            .then((res) => {
+            .then((res: RequestResponse) => {
                 expect(typeof res).to.equal('object');
 
-                const user = JSON.parse(JSON.stringify(res.body))
-
-                expect(typeof user).to.equal('object');
+                const user: GithubEntity = res.body as GithubEntity;
 
                 //Test result of name, company and location for the response
                 expect(user.name).to.equal('The Octocat');
@@ -130,11 +130,8 @@ describe('GET followers', () => {
 
         await github.getUserFollowers(username)
             .then((res) => {
-                expect(typeof res).to.equal('object');
 
-                const followers = JSON.parse(JSON.stringify(res.body)).map(follower => {
-                    return follower.login;
-                });
+                const followers: string[] = res.body as string[];
 
                 expect(Array.isArray(followers)).to.equal(true);
                 // Ensure that at least one follower is in the array
@@ -186,6 +183,8 @@ describe('Dropbox', () => {
         await dropbox.createFolder(accessToken, folderPath)
             .then((res) => {
 
+                expect(res.response.statusCode).is.a('number').equals(200);
+
             })
             .catch((err) => {
                 console.error(JSON.stringify(err, null, 2));
@@ -234,10 +233,11 @@ describe('Dropbox', () => {
         await dropbox.listAll(accessToken)
             .then((res) => {
 
+                expect(res.response.statusCode).is.a('number').equals(200);
+
             })
             .catch((err) => {
-                console.error(JSON.stringify(err, null, 2));
-                Dropbox.error(err.response);
+                Dropbox.error(err);
             });
 
         expect(scope.isDone()).to.be.true;
