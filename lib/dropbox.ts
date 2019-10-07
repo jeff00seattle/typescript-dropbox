@@ -2,29 +2,28 @@ import { RequestMethod, RequestOptions, Request, RequestResponse } from './helpe
 import httpStatus from 'http-status';
 import createError from 'http-errors';
 
-
 interface DropboxEntry {
-  '.tag': string,
-  name: string,
-  path_lower: string,
-  path_display: string,
-  id: string
+  '.tag': string;
+  name: string;
+  path_lower: string;
+  path_display: string;
+  id: string;
 }
 
 export interface DropboxFolderEntry {
-  metadata: DropboxEntry
-};
+  metadata: DropboxEntry;
+}
 
 export interface DropboxListEntry {
-  entries: DropboxEntry[]
-};
+  entries: DropboxEntry[];
+}
 
 export interface DropboxEntity {
-  type: string,
-  name: string,
-  path: string,
-  id: string
-};
+  type: string;
+  name: string;
+  path: string;
+  id: string;
+}
 
 export class Dropbox extends Request {
   /**
@@ -109,12 +108,14 @@ export class Dropbox extends Request {
 
     const resBody: DropboxListEntry = res.body as DropboxListEntry;
 
-    const entities = resBody.entries.map(entry => { return {
-      type: entry['.tag'],
-      name: entry.name,
-      path: entry.path_display,
-      id: entry.id
-    }}) as DropboxEntity[];
+    const entities = resBody.entries.map(entry => {
+      return {
+        type: entry['.tag'],
+        name: entry.name,
+        path: entry.path_display,
+        id: entry.id
+      };
+    }) as DropboxEntity[];
 
     return {
       response: {
@@ -164,7 +165,7 @@ export class Dropbox extends Request {
 
     const folders: DropboxEntity[] = res.body as DropboxEntity[];
     for (const folder of folders) {
-      await this.deleteById(accessToken, folder.id)
+      await this.deleteById(accessToken, folder.id);
     }
 
     return {
@@ -174,7 +175,7 @@ export class Dropbox extends Request {
       },
       body: folders
     } as RequestResponse;
-  };
+  }
 
   async deleteById(accessToken: string, id: string): Promise<RequestResponse> {
     const options: RequestOptions = {
@@ -211,5 +212,5 @@ export class Dropbox extends Request {
       },
       body: folder
     } as RequestResponse;
-  };
+  }
 }
